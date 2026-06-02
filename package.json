@@ -4,7 +4,8 @@
   "description": "All PDF tools running locally in your browser via Rust + WebAssembly",
   "scripts": {
     "start": "npx --yes serve www -p 3000 --no-clipboard",
-    "dev": "npx --yes serve www -p 3000"
+    "dev": "npx --yes serve www -p 3000",
+    "build:wasm": "wasm-pack build --target web --out-dir www/pkg --no-gitignore && rm -rf docs/pkg && cp -R www/pkg docs/pkg"
   },
   "keywords": ["pdf", "rust", "wasm", "local", "privacy"]
 }

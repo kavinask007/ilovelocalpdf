@@ -1,0 +1,15 @@
+{
+  "name": "ilovelocalpdf",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "ilovelocalpdf_bg.wasm",
+    "ilovelocalpdf.js",
+    "ilovelocalpdf.d.ts"
+  ],
+  "main": "ilovelocalpdf.js",
+  "types": "ilovelocalpdf.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
