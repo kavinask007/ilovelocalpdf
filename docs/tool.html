@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Tool - iLoveLocalPDF</title>
+  <meta name="description" content="Use this PDF tool locally in your browser with no uploads and no signup." />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="tool.html" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❤️</text></svg>" />
+</head>
+<body>
+  <nav class="navbar" aria-label="Main navigation">
+    <a href="index.html" class="navbar-logo">
+      <span class="logo-icon">❤️</span>
+      <span class="brand-name">iLoveLocal<span class="brand-accent">PDF</span></span>
+    </a>
+    <ul class="navbar-links" role="list">
+      <li><a href="index.html#tools-section">All Tools</a></li>
+      <li><a href="index.html#about-section">About</a></li>
+    </ul>
+    <a href="index.html#tools-section" class="btn-nav">🔒 100% Local</a>
+  </nav>
+
+  <main class="section" role="main" style="padding-top: 100px; padding-bottom: 60px; max-width: 860px;">
+    <a class="btn-secondary" href="index.html" style="max-width: 220px; margin-bottom: 18px;">← Back to all tools</a>
+    <section style="background: #13131d; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;">
+      <header class="modal-header">
+        <div class="modal-icon" id="tool-page-icon">📄</div>
+        <div>
+          <h1 class="modal-title" id="tool-page-title">PDF Tool</h1>
+          <p class="modal-subtitle" id="tool-page-subtitle">Process your file locally in your browser.</p>
+        </div>
+      </header>
+      <div class="modal-body" id="tool-page-body"></div>
+    </section>
+    <section style="margin-top: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px;">
+      <h2 id="tool-seo-title" style="font-family:'Plus Jakarta Sans',sans-serif; font-size:1.1rem; margin-bottom:10px;">PDF Tool</h2>
+      <div id="tool-seo-body" style="color:var(--text-secondary); line-height:1.7;">
+        <p>Use this PDF tool for local, private processing in your browser.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" aria-label="Footer">
+    <div class="footer-logo">iLoveLocal<span>PDF</span></div>
+    <p style="margin-top:8px;">Your files never leave your browser. Zero uploads. Zero tracking. Zero cloud.</p>
+  </footer>
+
+  <div class="toast" id="global-toast" role="alert" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
