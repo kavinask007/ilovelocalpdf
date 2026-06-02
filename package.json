@@ -1,0 +1,10 @@
+{
+  "name": "ilovelocalpdf",
+  "version": "1.0.0",
+  "description": "All PDF tools running locally in your browser via Rust + WebAssembly",
+  "scripts": {
+    "start": "npx --yes serve www -p 3000 --no-clipboard",
+    "dev": "npx --yes serve www -p 3000"
+  },
+  "keywords": ["pdf", "rust", "wasm", "local", "privacy"]
+}

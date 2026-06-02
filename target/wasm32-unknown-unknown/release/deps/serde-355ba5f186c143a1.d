@@ -1,0 +1,14 @@
+/Users/kavinraj/Documents/ilovelocalpdf/target/wasm32-unknown-unknown/release/deps/serde-355ba5f186c143a1.d: /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/kavinraj/Documents/ilovelocalpdf/target/wasm32-unknown-unknown/release/build/serde-973c8a3a8b56af36/out/private.rs
+
+/Users/kavinraj/Documents/ilovelocalpdf/target/wasm32-unknown-unknown/release/deps/libserde-355ba5f186c143a1.rlib: /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/kavinraj/Documents/ilovelocalpdf/target/wasm32-unknown-unknown/release/build/serde-973c8a3a8b56af36/out/private.rs
+
+/Users/kavinraj/Documents/ilovelocalpdf/target/wasm32-unknown-unknown/release/deps/libserde-355ba5f186c143a1.rmeta: /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/kavinraj/Documents/ilovelocalpdf/target/wasm32-unknown-unknown/release/build/serde-973c8a3a8b56af36/out/private.rs
+
+/Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/kavinraj/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/kavinraj/Documents/ilovelocalpdf/target/wasm32-unknown-unknown/release/build/serde-973c8a3a8b56af36/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/kavinraj/Documents/ilovelocalpdf/target/wasm32-unknown-unknown/release/build/serde-973c8a3a8b56af36/out
