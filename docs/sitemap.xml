@@ -6,73 +6,73 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=merge-pdf</loc>
+    <loc>https://ilovelocalpdf.com/merge-pdf/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=split-pdf</loc>
+    <loc>https://ilovelocalpdf.com/split-pdf/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=organize-pages</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=remove-pages</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=booklet-layout</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=compress-pdf</loc>
+    <loc>https://ilovelocalpdf.com/organize-pages/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=repair-pdf</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=image-to-pdf</loc>
+    <loc>https://ilovelocalpdf.com/remove-pages/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=pdf-to-image</loc>
+    <loc>https://ilovelocalpdf.com/booklet-layout/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=rotate-pdf</loc>
+    <loc>https://ilovelocalpdf.com/compress-pdf/</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=add-watermark</loc>
+    <loc>https://ilovelocalpdf.com/repair-pdf/</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=add-page-numbers</loc>
+    <loc>https://ilovelocalpdf.com/image-to-pdf/</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=protect-pdf</loc>
+    <loc>https://ilovelocalpdf.com/pdf-to-image/</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ilovelocalpdf.com/tool.html?tool=unlock-pdf</loc>
+    <loc>https://ilovelocalpdf.com/rotate-pdf/</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ilovelocalpdf.com/add-watermark/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ilovelocalpdf.com/add-page-numbers/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ilovelocalpdf.com/protect-pdf/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ilovelocalpdf.com/unlock-pdf/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>

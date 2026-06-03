@@ -5,7 +5,8 @@
   "scripts": {
     "start": "npx --yes serve www -p 3000 --no-clipboard",
     "dev": "npx --yes serve www -p 3000",
-    "build:wasm": "wasm-pack build --target web --out-dir www/pkg --no-gitignore && rm -rf docs/pkg && cp -R www/pkg docs/pkg"
+    "build:wasm": "wasm-pack build --target web --out-dir www/pkg --no-gitignore && rm -rf docs/pkg && cp -R www/pkg docs/pkg",
+    "build:pages": "node scripts/generate-tool-pages.mjs"
   },
   "keywords": ["pdf", "rust", "wasm", "local", "privacy"]
 }

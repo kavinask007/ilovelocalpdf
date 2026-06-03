@@ -71,7 +71,7 @@ function getToolSlug(toolId) {
 }
 
 function getToolPagePath(toolId) {
-  return `tool.html?tool=${getToolSlug(toolId)}`;
+  return `/${getToolSlug(toolId)}/`;
 }
 
 function updateToolBreadcrumb(toolId, cfg) {
@@ -88,38 +88,35 @@ function updateToolBreadcrumb(toolId, cfg) {
   script.textContent = JSON.stringify(buildBreadcrumbJsonLd(cfg, toolId, getToolPagePath));
 }
 
-function getToolIdFromUrl() {
-  const normalize = (value) => {
-    if (!value) return '';
-    return decodeURIComponent(String(value)).trim().toLowerCase().replace(/\.html$/i, '').replace(/^\/+|\/+$/g, '');
-  };
+function resolveToolId(raw) {
+  if (!raw) return null;
   const slugToTool = Object.fromEntries(Object.entries(TOOL_SLUGS).map(([id, slug]) => [slug, id]));
+  const normalized = decodeURIComponent(String(raw)).trim().toLowerCase().replace(/\.html$/i, '').replace(/^\/+|\/+$/g, '');
+  if (!normalized || normalized === 'tool' || normalized === 'index') return null;
+  if (TOOLS[normalized]) return normalized;
+  if (slugToTool[normalized]) return slugToTool[normalized];
+  return null;
+}
 
+function getToolIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const byQuery = normalize(params.get('tool'));
-  if (byQuery) {
-    if (TOOLS[byQuery]) return byQuery;
-    if (slugToTool[byQuery]) return slugToTool[byQuery];
+  const byQuery = resolveToolId(params.get('tool'));
+  if (byQuery) return byQuery;
+
+  const segments = window.location.pathname.split('/').filter(Boolean);
+  for (let i = segments.length - 1; i >= 0; i--) {
+    const byPath = resolveToolId(segments[i]);
+    if (byPath) return byPath;
   }
 
-  const byPath = normalize(window.location.pathname.split('/').pop() || '');
-  if (TOOLS[byPath]) return byPath;
-  if (slugToTool[byPath]) return slugToTool[byPath];
-
-  const byHash = normalize(window.location.hash.replace(/^#/, ''));
-  if (TOOLS[byHash]) return byHash;
-  if (slugToTool[byHash]) return slugToTool[byHash];
+  const byHash = resolveToolId(window.location.hash.replace(/^#/, ''));
+  if (byHash) return byHash;
 
   const hrefMatch = window.location.href.match(/[?&#]tool=([^&#]+)/i);
-  const byHref = normalize(hrefMatch?.[1] || '');
-  if (TOOLS[byHref]) return byHref;
-  if (slugToTool[byHref]) return slugToTool[byHref];
+  const byHref = resolveToolId(hrefMatch?.[1] || '');
+  if (byHref) return byHref;
 
-  const lastTool = normalize(sessionStorage.getItem('ilp:lastTool'));
-  if (TOOLS[lastTool]) return lastTool;
-  if (slugToTool[lastTool]) return slugToTool[lastTool];
-
-  return null;
+  return resolveToolId(sessionStorage.getItem('ilp:lastTool'));
 }
 
 // ── Modal helpers ─────────────────────────────────────────────────────────
@@ -194,9 +191,8 @@ if (toolPageContainer) {
     }
     applyToolPageSeo(toolId, cfg, getToolPagePath);
     const toolPath = getToolPagePath(toolId);
-    const expectedSlug = getToolSlug(toolId);
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('tool') !== expectedSlug) {
+    const expectedPath = new URL(toolPath, window.location.origin).pathname;
+    if (window.location.pathname !== expectedPath || window.location.search) {
       window.history.replaceState({}, '', toolPath);
     }
     updateToolBreadcrumb(toolId, cfg);
