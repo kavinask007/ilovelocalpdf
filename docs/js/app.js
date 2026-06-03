@@ -1,9 +1,17 @@
-// ─── iLoveLocalPDF — Main App JS ──────────────────────────────────────────
+// ─── I❤️localpdf — Main App JS ───────────────────────────────────────────
 // All PDF operations run via Rust WASM compiled with wasm-pack/lopdf
 
 import init, * as Wasm from '../pkg/ilovelocalpdf.js';
 import { encryptPDF } from 'https://cdn.jsdelivr.net/npm/@pdfsmaller/pdf-encrypt/+esm';
 import { decryptPDF } from 'https://cdn.jsdelivr.net/npm/@pdfsmaller/pdf-decrypt/+esm';
+import {
+  absoluteUrl,
+  applyToolPageSeo,
+  buildBreadcrumbJsonLd,
+  buildHomeFooterSeoHtml,
+  buildToolFooterSeoHtml,
+  buildToolSeoSectionHtml,
+} from './seo.js';
 
 // ── State ─────────────────────────────────────────────────────────────────
 let wasmReady = false;
@@ -57,6 +65,28 @@ const TOOL_SLUGS = {
   protect: 'protect-pdf',
   unlock: 'unlock-pdf',
 };
+
+function getToolSlug(toolId) {
+  return TOOL_SLUGS[toolId] || toolId;
+}
+
+function getToolPagePath(toolId) {
+  return `tool.html?tool=${getToolSlug(toolId)}`;
+}
+
+function updateToolBreadcrumb(toolId, cfg) {
+  const current = document.getElementById('tool-breadcrumb-current');
+  if (current) current.textContent = cfg.title;
+
+  let script = document.getElementById('tool-breadcrumb-jsonld');
+  if (!script) {
+    script = document.createElement('script');
+    script.id = 'tool-breadcrumb-jsonld';
+    script.type = 'application/ld+json';
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(buildBreadcrumbJsonLd(cfg, toolId, getToolPagePath));
+}
 
 function getToolIdFromUrl() {
   const normalize = (value) => {
@@ -127,6 +157,12 @@ if (overlay) {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 }
 
+// ── SEO-friendly tool URLs on homepage cards ───────────────────────────────
+document.querySelectorAll('a.tool-card[data-tool]').forEach(card => {
+  const id = card.dataset.tool;
+  if (id && TOOLS[id]) card.setAttribute('href', getToolPagePath(id));
+});
+
 // ── Tool card clicks ──────────────────────────────────────────────────────
 document.querySelectorAll('.tool-card').forEach(card => {
   if (card.tagName === 'A') {
@@ -156,34 +192,38 @@ if (toolPageContainer) {
       pageIcon.textContent = cfg.icon;
       pageIcon.style.background = cfg.color + '22';
     }
-    document.title = `${cfg.title} - iLoveLocalPDF`;
-    const desc = `Use ${cfg.title} online for free with local browser processing. No uploads, no signup, fully private.`;
-    const descMeta = document.querySelector('meta[name="description"]');
-    if (descMeta) descMeta.setAttribute('content', desc);
-    const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) canonical.setAttribute('href', `tool.html?tool=${toolId}`);
-    if (!window.location.search.includes('tool=')) {
-      const next = `tool.html?tool=${toolId}`;
-      window.history.replaceState({}, '', next);
+    applyToolPageSeo(toolId, cfg, getToolPagePath);
+    const toolPath = getToolPagePath(toolId);
+    const expectedSlug = getToolSlug(toolId);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tool') !== expectedSlug) {
+      window.history.replaceState({}, '', toolPath);
     }
+    updateToolBreadcrumb(toolId, cfg);
     sessionStorage.setItem('ilp:lastTool', toolId);
     const seoTitle = document.getElementById('tool-seo-title');
     const seoBody = document.getElementById('tool-seo-body');
-    if (seoTitle) seoTitle.textContent = `${cfg.title} Tool`;
-    if (seoBody) {
-      seoBody.innerHTML = `
-        <p>${cfg.title} helps you ${cfg.sub.toLowerCase()} directly in your browser.</p>
-        <p>No uploads are required, so your files stay private on your device. This tool works instantly after page load and supports common PDF workflows for school, work, and personal docs.</p>
-      `;
-    }
+    if (seoTitle) seoTitle.textContent = `${cfg.title} — Free & Private`;
+    if (seoBody) seoBody.innerHTML = buildToolSeoSectionHtml(toolId, cfg, getToolPagePath);
+    const footerSeo = document.getElementById('footer-seo');
+    if (footerSeo) footerSeo.innerHTML = buildToolFooterSeoHtml(toolId, cfg, getToolPagePath);
     currentTool = toolId;
     buildToolUI(toolId, toolPageContainer);
   } else {
+    document.title = 'Tool Not Found - I❤️localpdf';
+    const current = document.getElementById('tool-breadcrumb-current');
+    if (current) current.textContent = 'Tool not found';
     toolPageContainer.innerHTML = `
-      <p class="text-muted">Tool not found.</p>
-      <a class="btn-secondary" href="/index.html" style="max-width: 240px; margin-top: 12px;">← Back to all tools</a>
+      <p class="text-muted">This PDF tool could not be found. Browse our full list of free local PDF tools.</p>
+      <a class="btn-secondary" href="index.html#tools-section">Browse free PDF tools</a>
     `;
   }
+}
+
+// ── Homepage SEO footer (small print, crawler-friendly) ───────────────────
+if (!toolPageContainer) {
+  const footerSeo = document.getElementById('footer-seo');
+  if (footerSeo) footerSeo.innerHTML = buildHomeFooterSeoHtml(getToolPagePath);
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────

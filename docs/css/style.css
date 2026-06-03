@@ -423,6 +423,47 @@ body {
 
 .footer-logo span { color: var(--accent); }
 
+.footer-tagline {
+  margin-top: 8px;
+  font-size: 0.85rem;
+}
+
+.footer-seo {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  max-width: 920px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  font-size: 0.65rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.footer-seo-privacy {
+  margin-bottom: 12px;
+}
+
+.footer-seo-tool {
+  margin: 0 0 10px;
+}
+
+.footer-seo-tool a {
+  color: rgba(255, 255, 255, 0.35);
+  text-decoration: none;
+}
+
+.footer-seo-tool a:hover {
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: underline;
+}
+
+.footer-seo-tool strong {
+  color: rgba(255, 255, 255, 0.32);
+  font-weight: 600;
+}
+
 /* ── MODAL / TOOL PAGE ──────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
@@ -846,6 +887,67 @@ body {
   margin-top: 8px;
 }
 .btn-secondary:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+
+/* ── TOOL PAGE BREADCRUMB ───────────────────────────────────── */
+.tool-breadcrumb {
+  margin-bottom: 20px;
+}
+
+.tool-breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.tool-breadcrumb li {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.tool-breadcrumb li + li::before {
+  content: '/';
+  margin: 0 10px;
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: 400;
+  user-select: none;
+}
+
+.tool-breadcrumb a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.tool-breadcrumb a:hover,
+.tool-breadcrumb a:focus-visible {
+  color: var(--accent);
+  outline: none;
+}
+
+.tool-breadcrumb [aria-current='page'] {
+  color: var(--text-primary);
+  font-weight: 600;
+  max-width: 100%;
+}
+
+#tool-seo-body a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+#tool-seo-body a:hover,
+#tool-seo-body a:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
 
 /* ── PROGRESS ───────────────────────────────────────────────── */
 .progress-wrap {

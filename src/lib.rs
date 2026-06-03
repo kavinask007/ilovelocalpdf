@@ -248,38 +248,41 @@ pub fn compress_pdf(data: &[u8]) -> Result<js_sys::Uint8Array, JsValue> {
 
 // ─── ADD WATERMARK ───────────────────────────────────────────────────────────
 
-fn get_or_create_resources_mut<'a>(doc: &'a mut Document, page_id: ObjectId) -> Result<&'a mut Dictionary, String> {
-    let mut resources_id: Option<ObjectId> = None;
-    if let Some(Object::Dictionary(ref mut page_dict)) = doc.objects.get_mut(&page_id) {
-        match page_dict.get(b"Resources") {
-            Ok(Object::Reference(id)) => {
-                resources_id = Some(*id);
-            }
-            Ok(Object::Dictionary(_)) => {
-                // It is a direct dictionary
-            }
-            _ => {
-                // Create a new direct dictionary
-                page_dict.set("Resources", Object::Dictionary(Dictionary::new()));
+fn get_or_create_resources_id(doc: &mut Document, page_id: ObjectId) -> Result<ObjectId, String> {
+    let resources = doc
+        .objects
+        .get(&page_id)
+        .and_then(|o| o.as_dict().ok())
+        .and_then(|d| d.get(b"Resources").ok())
+        .cloned();
+
+    match resources {
+        Some(Object::Reference(id)) => {
+            if doc.objects.get(&id).and_then(|o| o.as_dict().ok()).is_some() {
+                Ok(id)
+            } else {
+                Err("Resources indirect object is not a dictionary".to_string())
             }
         }
-    }
-
-    if let Some(res_id) = resources_id {
-        if let Some(Object::Dictionary(ref mut dict)) = doc.objects.get_mut(&res_id) {
-            return Ok(dict);
-        } else {
-            return Err("Resources indirect object is not a dictionary".to_string());
+        Some(Object::Dictionary(res_dict)) => {
+            let res_id = doc.new_object_id();
+            doc.objects
+                .insert(res_id, Object::Dictionary(res_dict));
+            if let Some(Object::Dictionary(page_dict)) = doc.objects.get_mut(&page_id) {
+                page_dict.set("Resources", Object::Reference(res_id));
+            }
+            Ok(res_id)
+        }
+        _ => {
+            let res_id = doc.new_object_id();
+            doc.objects
+                .insert(res_id, Object::Dictionary(Dictionary::new()));
+            if let Some(Object::Dictionary(page_dict)) = doc.objects.get_mut(&page_id) {
+                page_dict.set("Resources", Object::Reference(res_id));
+            }
+            Ok(res_id)
         }
     }
-
-    if let Some(Object::Dictionary(ref mut page_dict)) = doc.objects.get_mut(&page_id) {
-        if let Ok(Object::Dictionary(ref mut dict)) = page_dict.get_mut(b"Resources") {
-            return Ok(dict);
-        }
-    }
-
-    Err("Failed to get Resources dictionary".to_string())
 }
 
 fn append_page_contents(doc: &mut Document, page_id: ObjectId, new_content_id: ObjectId) -> Result<(), String> {
@@ -303,9 +306,15 @@ fn append_page_contents(doc: &mut Document, page_id: ObjectId, new_content_id: O
                     return Ok(());
                 }
             }
-            
+
             if let Some(Object::Dictionary(ref mut page_dict)) = doc.objects.get_mut(&page_id) {
-                page_dict.set("Contents", Object::Array(vec![Object::Reference(id), Object::Reference(new_content_id)]));
+                page_dict.set(
+                    "Contents",
+                    Object::Array(vec![
+                        Object::Reference(id),
+                        Object::Reference(new_content_id),
+                    ]),
+                );
             }
         }
         Some(Object::Array(mut arr)) => {
@@ -314,24 +323,90 @@ fn append_page_contents(doc: &mut Document, page_id: ObjectId, new_content_id: O
                 page_dict.set("Contents", Object::Array(arr));
             }
         }
-        _ => {
+        Some(Object::Stream(stream)) => {
+            let old_id = doc.new_object_id();
+            doc.objects.insert(old_id, Object::Stream(stream));
+            if let Some(Object::Dictionary(ref mut page_dict)) = doc.objects.get_mut(&page_id) {
+                page_dict.set(
+                    "Contents",
+                    Object::Array(vec![
+                        Object::Reference(old_id),
+                        Object::Reference(new_content_id),
+                    ]),
+                );
+            }
+        }
+        None => {
             if let Some(Object::Dictionary(ref mut page_dict)) = doc.objects.get_mut(&page_id) {
                 page_dict.set("Contents", Object::Reference(new_content_id));
             }
+        }
+        Some(_) => {
+            return Err("Unsupported page Contents object".to_string());
         }
     }
     Ok(())
 }
 
-#[wasm_bindgen]
-pub fn add_watermark(
+/// Add a named entry to a page resource subdictionary (Font, ExtGState, etc.),
+/// preserving existing entries when the subdictionary is stored indirectly.
+fn merge_named_resource(
+    doc: &mut Document,
+    resources_id: ObjectId,
+    resource_key: &[u8],
+    name: &[u8],
+    value_id: ObjectId,
+) -> Result<(), String> {
+    let existing = doc
+        .objects
+        .get(&resources_id)
+        .and_then(|o| o.as_dict().ok())
+        .and_then(|d| d.get(resource_key).ok())
+        .cloned()
+        .unwrap_or(Object::Dictionary(Dictionary::new()));
+
+    let (mut sub_dict, indirect_id) = match existing {
+        Object::Dictionary(d) => (d, None),
+        Object::Reference(id) => {
+            let d = match doc.objects.get(&id) {
+                Some(Object::Dictionary(d)) => d.clone(),
+                _ => {
+                    return Err(format!(
+                        "{} indirect object is not a dictionary",
+                        String::from_utf8_lossy(resource_key)
+                    ));
+                }
+            };
+            (d, Some(id))
+        }
+        _ => (Dictionary::new(), None),
+    };
+
+    sub_dict.set(name, Object::Reference(value_id));
+
+    let updated = if let Some(id) = indirect_id {
+        doc.objects.insert(id, Object::Dictionary(sub_dict));
+        Object::Reference(id)
+    } else {
+        Object::Dictionary(sub_dict)
+    };
+
+    if let Some(Object::Dictionary(res_dict)) = doc.objects.get_mut(&resources_id) {
+        res_dict.set(resource_key, updated);
+        Ok(())
+    } else {
+        Err("Resources object is not a dictionary".to_string())
+    }
+}
+
+fn add_watermark_inner(
     data: &[u8],
     text: &str,
     opacity: f32,
     position: &str,
-) -> Result<js_sys::Uint8Array, JsValue> {
+) -> Result<Vec<u8>, String> {
     let mut doc = Document::load_mem(data)
-        .map_err(|e| js_err(format!("Load error: {e}")))?;
+        .map_err(|e| format!("Load error: {e}"))?;
     let page_ids: Vec<ObjectId> = doc.page_iter().collect();
 
     let font_id = doc.new_object_id();
@@ -384,46 +459,34 @@ pub fn add_watermark(
         let wm_id = doc.new_object_id();
         doc.objects.insert(wm_id, Object::Stream(wm_stream));
 
-        let res_dict = get_or_create_resources_mut(&mut doc, *pid).map_err(|e| js_err(e))?;
+        let resources_id = get_or_create_resources_id(&mut doc, *pid)?;
+        merge_named_resource(&mut doc, resources_id, b"Font", b"Wm", font_id)?;
+        merge_named_resource(&mut doc, resources_id, b"ExtGState", b"Gs0", alpha_gs_id)?;
 
-        let mut fonts = match res_dict.get(b"Font").cloned()
-            .unwrap_or(Object::Dictionary(Dictionary::new()))
-        {
-            Object::Dictionary(d) => d,
-            _ => Dictionary::new(),
-        };
-        fonts.set("Wm", Object::Reference(font_id));
-        res_dict.set("Font", Object::Dictionary(fonts));
-
-        let mut ext_gs = match res_dict.get(b"ExtGState").cloned()
-            .unwrap_or(Object::Dictionary(Dictionary::new()))
-        {
-            Object::Dictionary(d) => d,
-            _ => Dictionary::new(),
-        };
-        ext_gs.set("Gs0", Object::Reference(alpha_gs_id));
-        res_dict.set("ExtGState", Object::Dictionary(ext_gs));
-
-        append_page_contents(&mut doc, *pid, wm_id).map_err(|e| js_err(e))?;
+        append_page_contents(&mut doc, *pid, wm_id)?;
     }
 
     let mut out = Vec::new();
     doc.save_to(&mut Cursor::new(&mut out))
-        .map_err(|e| js_err(format!("Save error: {e}")))?;
-    Ok(js_sys::Uint8Array::from(out.as_slice()))
+        .map_err(|e| format!("Save error: {e}"))?;
+    Ok(out)
+}
+
+#[wasm_bindgen]
+pub fn add_watermark(
+    data: &[u8],
+    text: &str,
+    opacity: f32,
+    position: &str,
+) -> Result<js_sys::Uint8Array, JsValue> {
+    add_watermark_inner(data, text, opacity, position)
+        .map(|out| js_sys::Uint8Array::from(out.as_slice()))
+        .map_err(js_err)
 }
 
 fn get_page_dimensions(doc: &Document, page_id: &ObjectId) -> (f32, f32) {
-    if let Some(Object::Dictionary(dict)) = doc.objects.get(page_id) {
-        if let Ok(Object::Array(media_box)) = dict.get(b"MediaBox") {
-            if media_box.len() >= 4 {
-                let w = media_box[2].as_float().unwrap_or(612.0)
-                    - media_box[0].as_float().unwrap_or(0.0);
-                let h = media_box[3].as_float().unwrap_or(792.0)
-                    - media_box[1].as_float().unwrap_or(0.0);
-                return (w, h);
-            }
-        }
+    if let Some([x0, y0, x1, y1]) = resolve_page_box(doc, *page_id, b"MediaBox") {
+        return ((x1 - x0).max(1.0), (y1 - y0).max(1.0));
     }
     (612.0, 792.0)
 }
@@ -475,16 +538,8 @@ pub fn add_page_numbers(
         let pn_id = doc.new_object_id();
         doc.objects.insert(pn_id, Object::Stream(pn_stream));
 
-        let res_dict = get_or_create_resources_mut(&mut doc, *pid).map_err(|e| js_err(e))?;
-
-        let mut fonts = match res_dict.get(b"Font").cloned()
-            .unwrap_or(Object::Dictionary(Dictionary::new()))
-        {
-            Object::Dictionary(d) => d,
-            _ => Dictionary::new(),
-        };
-        fonts.set("Pn", Object::Reference(font_id));
-        res_dict.set("Font", Object::Dictionary(fonts));
+        let resources_id = get_or_create_resources_id(&mut doc, *pid).map_err(|e| js_err(e))?;
+        merge_named_resource(&mut doc, resources_id, b"Font", b"Pn", font_id).map_err(|e| js_err(e))?;
 
         append_page_contents(&mut doc, *pid, pn_id).map_err(|e| js_err(e))?;
     }
@@ -505,8 +560,8 @@ pub fn protect_pdf(data: &[u8], password: &str) -> Result<js_sys::Uint8Array, Js
     let hash = format!("{:016x}", simple_hash(password));
     let info_id = doc.new_object_id();
     let info_dict = Dictionary::from_iter(vec![
-        ("Producer", Object::string_literal(b"iLoveLocalPDF".to_vec())),
-        ("Creator",  Object::string_literal(b"iLoveLocalPDF".to_vec())),
+        ("Producer", Object::string_literal("I❤️localpdf".as_bytes().to_vec())),
+        ("Creator",  Object::string_literal("I❤️localpdf".as_bytes().to_vec())),
         ("PasswordHash", Object::string_literal(hash.into_bytes())),
         ("Protected", Object::Boolean(true)),
     ]);
@@ -889,6 +944,24 @@ fn resolve_page_resources(doc: &Document, page_id: ObjectId) -> Option<Object> {
     }
 }
 
+fn box_array_from_object(doc: &Document, obj: &Object) -> Option<[f32; 4]> {
+    let resolved = match obj {
+        Object::Reference(id) => doc.objects.get(id)?,
+        other => other,
+    };
+    let Object::Array(arr) = resolved else {
+        return None;
+    };
+    if arr.len() < 4 {
+        return None;
+    }
+    let x0 = arr[0].as_float().ok()?;
+    let y0 = arr[1].as_float().ok()?;
+    let x1 = arr[2].as_float().ok()?;
+    let y1 = arr[3].as_float().ok()?;
+    Some([x0, y0, x1, y1])
+}
+
 fn resolve_page_box(doc: &Document, page_id: ObjectId, key: &[u8]) -> Option<[f32; 4]> {
     let mut cur = page_id;
     loop {
@@ -896,13 +969,9 @@ fn resolve_page_box(doc: &Document, page_id: ObjectId, key: &[u8]) -> Option<[f3
             Some(Object::Dictionary(d)) => d,
             _ => return None,
         };
-        if let Ok(Object::Array(arr)) = dict.get(key) {
-            if arr.len() >= 4 {
-                let x0 = arr[0].as_float().ok()?;
-                let y0 = arr[1].as_float().ok()?;
-                let x1 = arr[2].as_float().ok()?;
-                let y1 = arr[3].as_float().ok()?;
-                return Some([x0, y0, x1, y1]);
+        if let Ok(obj) = dict.get(key) {
+            if let Some(box_vals) = box_array_from_object(doc, obj) {
+                return Some(box_vals);
             }
         }
         cur = match dict.get(b"Parent") {
@@ -955,4 +1024,217 @@ pub fn repair_pdf(data: &[u8]) -> Result<js_sys::Uint8Array, JsValue> {
     doc2.save_to(&mut Cursor::new(&mut out))
         .map_err(|e| js_err(format!("Save error: {e}")))?;
     Ok(js_sys::Uint8Array::from(out.as_slice()))
+}
+
+#[cfg(test)]
+mod watermark_tests {
+    use super::*;
+
+    fn minimal_pdf() -> Vec<u8> {
+        let mut doc = Document::with_version("1.4");
+        let font_id = doc.new_object_id();
+        doc.objects.insert(
+            font_id,
+            Object::Dictionary(Dictionary::from_iter(vec![
+                ("Type", Object::Name(b"Font".to_vec())),
+                ("Subtype", Object::Name(b"Type1".to_vec())),
+                ("BaseFont", Object::Name(b"Helvetica".to_vec())),
+            ])),
+        );
+
+        let content_id = doc.new_object_id();
+        let content = Stream::new(Dictionary::new(), b"BT /F1 24 Tf 72 720 Td (Hello) Tj ET".to_vec());
+        doc.objects.insert(content_id, Object::Stream(content));
+
+        let page_id = doc.new_object_id();
+        let page = Dictionary::from_iter(vec![
+            ("Type", Object::Name(b"Page".to_vec())),
+            ("MediaBox", Object::Array(vec![
+                Object::Integer(0),
+                Object::Integer(0),
+                Object::Integer(612),
+                Object::Integer(792),
+            ])),
+            ("Contents", Object::Reference(content_id)),
+            (
+                "Resources",
+                Object::Dictionary(Dictionary::from_iter(vec![(
+                    "Font",
+                    Object::Dictionary(Dictionary::from_iter(vec![(
+                        "F1",
+                        Object::Reference(font_id),
+                    )])),
+                )])),
+            ),
+        ]);
+        doc.objects.insert(page_id, Object::Dictionary(page));
+
+        let pages_id = doc.new_object_id();
+        doc.objects.insert(
+            pages_id,
+            Object::Dictionary(Dictionary::from_iter(vec![
+                ("Type", Object::Name(b"Pages".to_vec())),
+                ("Kids", Object::Array(vec![Object::Reference(page_id)])),
+                ("Count", Object::Integer(1)),
+            ])),
+        );
+
+        let catalog_id = doc.new_object_id();
+        doc.objects.insert(
+            catalog_id,
+            Object::Dictionary(Dictionary::from_iter(vec![
+                ("Type", Object::Name(b"Catalog".to_vec())),
+                ("Pages", Object::Reference(pages_id)),
+            ])),
+        );
+        doc.trailer.set("Root", Object::Reference(catalog_id));
+
+        let mut out = Vec::new();
+        doc.save_to(&mut Cursor::new(&mut out)).unwrap();
+        out
+    }
+
+    #[test]
+    fn watermark_embeds_text_in_output() {
+        let input = minimal_pdf();
+        let out = add_watermark_inner(&input, "CONFIDENTIAL", 0.3, "diagonal").unwrap();
+        let out_str = String::from_utf8_lossy(&out);
+        assert!(
+            out_str.contains("CONFIDENTIAL"),
+            "output should contain watermark text"
+        );
+    }
+
+    fn pdf_with_indirect_font_resources() -> Vec<u8> {
+        let mut doc = Document::with_version("1.4");
+        let font_id = doc.new_object_id();
+        doc.objects.insert(
+            font_id,
+            Object::Dictionary(Dictionary::from_iter(vec![
+                ("Type", Object::Name(b"Font".to_vec())),
+                ("Subtype", Object::Name(b"Type1".to_vec())),
+                ("BaseFont", Object::Name(b"Helvetica".to_vec())),
+            ])),
+        );
+        let fonts_id = doc.new_object_id();
+        doc.objects.insert(
+            fonts_id,
+            Object::Dictionary(Dictionary::from_iter(vec![(
+                "F1",
+                Object::Reference(font_id),
+            )])),
+        );
+        let resources_id = doc.new_object_id();
+        doc.objects.insert(
+            resources_id,
+            Object::Dictionary(Dictionary::from_iter(vec![(
+                "Font",
+                Object::Reference(fonts_id),
+            )])),
+        );
+        let media_id = doc.new_object_id();
+        doc.objects.insert(
+            media_id,
+            Object::Array(vec![
+                Object::Integer(0),
+                Object::Integer(0),
+                Object::Integer(612),
+                Object::Integer(792),
+            ]),
+        );
+        let content_id = doc.new_object_id();
+        doc.objects.insert(
+            content_id,
+            Object::Stream(Stream::new(
+                Dictionary::new(),
+                b"BT /F1 12 Tf 72 720 Td (Hello) Tj ET".to_vec(),
+            )),
+        );
+        let page_id = doc.new_object_id();
+        doc.objects.insert(
+            page_id,
+            Object::Dictionary(Dictionary::from_iter(vec![
+                ("Type", Object::Name(b"Page".to_vec())),
+                ("MediaBox", Object::Reference(media_id)),
+                ("Contents", Object::Reference(content_id)),
+                ("Resources", Object::Reference(resources_id)),
+            ])),
+        );
+        let pages_id = doc.new_object_id();
+        doc.objects.insert(
+            pages_id,
+            Object::Dictionary(Dictionary::from_iter(vec![
+                ("Type", Object::Name(b"Pages".to_vec())),
+                ("Kids", Object::Array(vec![Object::Reference(page_id)])),
+                ("Count", Object::Integer(1)),
+            ])),
+        );
+        let catalog_id = doc.new_object_id();
+        doc.objects.insert(
+            catalog_id,
+            Object::Dictionary(Dictionary::from_iter(vec![
+                ("Type", Object::Name(b"Catalog".to_vec())),
+                ("Pages", Object::Reference(pages_id)),
+            ])),
+        );
+        doc.trailer.set("Root", Object::Reference(catalog_id));
+        let mut out = Vec::new();
+        doc.save_to(&mut Cursor::new(&mut out)).unwrap();
+        out
+    }
+
+    #[test]
+    fn watermark_preserves_indirect_font_resources() {
+        let input = pdf_with_indirect_font_resources();
+        let out = add_watermark_inner(&input, "CONFIDENTIAL", 0.3, "diagonal").unwrap();
+        assert!(String::from_utf8_lossy(&out).contains("CONFIDENTIAL"));
+        let doc = Document::load_mem(&out).unwrap();
+        let fonts = doc.objects.get(&fonts_id_from_resources(&doc).1).unwrap();
+        let Object::Dictionary(fonts_dict) = fonts else {
+            panic!("expected font dictionary");
+        };
+        assert!(fonts_dict.has(b"F1"), "original font should remain");
+        assert!(fonts_dict.has(b"Wm"), "watermark font should be added");
+    }
+
+    fn fonts_id_from_resources(doc: &Document) -> (ObjectId, ObjectId) {
+        let page_id = doc.page_iter().next().unwrap();
+        let res_id = match doc
+            .objects
+            .get(&page_id)
+            .and_then(|o| o.as_dict().ok())
+            .and_then(|d| d.get(b"Resources").ok())
+        {
+            Some(Object::Reference(id)) => *id,
+            _ => panic!("expected indirect resources"),
+        };
+        let font_ref = doc
+            .objects
+            .get(&res_id)
+            .and_then(|o| o.as_dict().ok())
+            .and_then(|d| d.get(b"Font").ok())
+            .and_then(|o| match o {
+                Object::Reference(id) => Some(*id),
+                _ => None,
+            })
+            .expect("expected indirect font dict");
+        (res_id, font_ref)
+    }
+
+    #[test]
+    fn watermark_appends_content_stream() {
+        let input = minimal_pdf();
+        let out = add_watermark_inner(&input, "TEST", 0.5, "center").unwrap();
+        let doc = Document::load_mem(&out).unwrap();
+        let page_id = doc.page_iter().next().unwrap();
+        let contents = doc
+            .objects
+            .get(&page_id)
+            .and_then(|o| o.as_dict().ok())
+            .and_then(|d| d.get(b"Contents").ok());
+        match contents {
+            Some(Object::Array(arr)) => assert!(arr.len() >= 2, "should append watermark stream"),
+            _ => panic!("expected Contents array after watermark, got {:?}", contents),
+        }
+    }
 }
