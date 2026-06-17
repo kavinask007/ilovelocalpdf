@@ -2,6 +2,8 @@ use wasm_bindgen::prelude::*;
 use lopdf::{Document, Object, ObjectId, Dictionary, Stream};
 use std::io::Cursor;
 
+mod compress;
+
 #[cfg(feature = "console_error_panic_hook")]
 pub use console_error_panic_hook::set_once as set_panic_hook;
 
@@ -233,7 +235,7 @@ pub fn rotate_pdf(data: &[u8], angle: i32, pages_json: &str) -> Result<js_sys::U
 pub fn compress_pdf(data: &[u8]) -> Result<js_sys::Uint8Array, JsValue> {
     let mut doc = Document::load_mem(data)
         .map_err(|e| js_err(format!("Load error: {e}")))?;
-    doc.compress();
+    compress::optimize_pdf(&mut doc).map_err(js_err)?;
     let mut out = Vec::new();
     doc.save_to(&mut Cursor::new(&mut out))
         .map_err(|e| js_err(format!("Save error: {e}")))?;

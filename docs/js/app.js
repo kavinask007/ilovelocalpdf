@@ -1212,7 +1212,11 @@ function buildCompress(c) {
     prog.show(30, 'Reading PDF…');
     try {
       const data = await readFile(pdfFile);
-      prog.show(70, 'Compressing streams…');
+      prog.show(40, 'Analyzing resources…');
+      await new Promise(r => setTimeout(r, 0));
+      prog.show(55, 'Deduplicating fonts & streams…');
+      await new Promise(r => setTimeout(r, 0));
+      prog.show(70, 'Recompressing & optimizing…');
       const result = Wasm.compress_pdf(data);
       prog.show(100, 'Done!');
       prog.hide();
