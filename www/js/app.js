@@ -2,7 +2,10 @@
 // All PDF operations run via Rust WASM (lopdf + AES-GCM)
 // Tool UIs are in separate modules under js/tools/
 
-import init, * as Wasm from '../pkg/ilovelocalpdf.js';
+// Cache-bust: updated on each build so WASM + JS are never mismatched
+const BUILD_HASH = '312d4fa';
+
+import initWasm, * as Wasm from '../pkg/ilovelocalpdf.js';
 import { showToast } from './base.js';
 import { TOOLS, TOOL_SLUGS } from './tools-config.js';
 import { buildMerge } from './tools/merge.js';
@@ -132,7 +135,9 @@ if (overlay) {
 async function boot() {
   const overlay = document.getElementById('wasm-loading-overlay');
   try {
-    await init();
+    const wasmUrl = new URL('../pkg/ilovelocalpdf_bg.wasm', import.meta.url);
+    if (BUILD_HASH && !BUILD_HASH.startsWith('__')) wasmUrl.searchParams.set('v', BUILD_HASH);
+    await initWasm(wasmUrl);
     wasmReady = true;
     if (overlay) overlay.remove();
   } catch (e) {

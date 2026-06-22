@@ -5,9 +5,9 @@
   "scripts": {
     "start": "npx --yes serve www -p 3000 --no-clipboard",
     "dev": "npx --yes serve www -p 3000",
-    "build:wasm": "wasm-pack build --target web --out-dir www/pkg && rm -rf docs/pkg && cp -R www/pkg docs/pkg",
-    "build:pages": "node scripts/generate-tool-pages.mjs && cp -R www/js www/css www/robots.txt www/pkg www/sitemap.xml docs/",
-    "build:all": "npm run build:wasm && npm run build:pages"
+    "build:wasm": "wasm-pack build --target web --out-dir www/pkg && rm -rf docs/pkg && cp -R www/pkg docs/pkg && node scripts/inject-build-hash.mjs",
+    "build:pages": "node scripts/generate-tool-pages.mjs && cp -R www/js www/css www/robots.txt www/pkg www/sitemap.xml docs/ && touch docs/.nojekyll && node scripts/inject-build-hash.mjs",
+    "build:all": "npm run build:wasm && npm run build:pages && touch www/.nojekyll"
   },
   "keywords": [
     "pdf",
