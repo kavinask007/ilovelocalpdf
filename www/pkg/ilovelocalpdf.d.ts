@@ -17,6 +17,11 @@ export function images_to_pdf(images_array: Array<any>): Uint8Array;
 
 export function init(): void;
 
+/**
+ * Check if a PDF was protected by our legacy FNV-1a hash method
+ */
+export function is_legacy_protected(data: Uint8Array): boolean;
+
 export function merge_pdfs(pdf_array: Array<any>): Uint8Array;
 
 export function nup_pdf(data: Uint8Array, nup: number): Uint8Array;
@@ -37,26 +42,29 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
-    readonly add_page_numbers: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
-    readonly add_watermark: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number];
-    readonly compress_pdf: (a: number, b: number) => [number, number, number];
-    readonly delete_pages: (a: number, b: number, c: number, d: number) => [number, number, number];
     readonly get_page_count: (a: number, b: number) => [number, number, number];
     readonly get_pdf_info: (a: number, b: number) => [number, number, number, number];
-    readonly images_to_pdf: (a: any) => [number, number, number];
-    readonly init: () => void;
-    readonly merge_pdfs: (a: any) => [number, number, number];
-    readonly nup_pdf: (a: number, b: number, c: number) => [number, number, number];
-    readonly organize_pages: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly is_legacy_protected: (a: number, b: number) => number;
     readonly protect_pdf: (a: number, b: number, c: number, d: number) => [number, number, number];
-    readonly repair_pdf: (a: number, b: number) => [number, number, number];
+    readonly unlock_pdf: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly delete_pages: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly organize_pages: (a: number, b: number, c: number, d: number) => [number, number, number];
     readonly rotate_pdf: (a: number, b: number, c: number, d: number, e: number) => [number, number, number];
     readonly split_pdf: (a: number, b: number, c: number, d: number) => [number, number, number];
-    readonly unlock_pdf: (a: number, b: number, c: number, d: number) => [number, number, number];
+    readonly add_watermark: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number];
+    readonly add_page_numbers: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number];
+    readonly merge_pdfs: (a: any) => [number, number, number];
+    readonly compress_pdf: (a: number, b: number) => [number, number, number];
+    readonly images_to_pdf: (a: any) => [number, number, number];
+    readonly repair_pdf: (a: number, b: number) => [number, number, number];
+    readonly init: () => void;
+    readonly nup_pdf: (a: number, b: number, c: number) => [number, number, number];
+    readonly __wbindgen_exn_store: (a: number) => void;
+    readonly __externref_table_alloc: () => number;
+    readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-    readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __externref_table_dealloc: (a: number) => void;
     readonly __wbindgen_start: () => void;
 }

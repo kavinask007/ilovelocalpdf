@@ -131,18 +131,18 @@ const SEO = {
   protect: {
     title: 'Protect PDF with Password Online Free',
     description:
-      'Password-protect a PDF in your browser. Encrypt PDFs locally without uploading sensitive documents.',
-    keywords: 'protect pdf, password protect pdf, encrypt pdf, lock pdf with password',
-    body: 'Set a password before sharing contracts or personal records. Files never leave your computer.',
-    footer: 'Password protect PDF, encrypt PDF online, lock PDF with password, secure PDF free in browser.',
+      'Password-protect a PDF in your browser with AES-256-CBC encryption (PDF 2.0 standard). Encrypt PDFs locally without uploading sensitive documents.',
+    keywords: 'protect pdf, password protect pdf, encrypt pdf aes-256, lock pdf with password',
+    body: 'Set a password before sharing contracts or personal records. Produces a standard password-protected PDF that opens in any viewer. Uses AES-256-CBC via Rust + WebAssembly for strong, local-only protection.',
+    footer: 'Password protect PDF, encrypt PDF AES-256-CBC, lock PDF with password, secure PDF free in browser with local encryption.',
   },
   unlock: {
     title: 'Unlock PDF Online Free',
     description:
-      'Remove password protection from a PDF you own. Decrypt PDFs locally in your browser — private and free.',
-    keywords: 'unlock pdf, remove pdf password, decrypt pdf, unprotect pdf',
-    body: 'Enter the document password to produce an unlocked copy for editing or archiving.',
-    footer: 'Unlock PDF online, remove PDF password, decrypt PDF free, unprotect PDF file locally.',
+      'Remove AES-256-CBC password protection from a PDF you own. Decrypt PDFs locally in your browser — private and free.',
+    keywords: 'unlock pdf, remove pdf password, decrypt pdf aes-256, unprotect pdf',
+    body: 'Enter the document password to produce an unlocked copy for editing or archiving. Supports AES-256-CBC decryption via local Rust/WASM. Works with standard password-protected PDFs.',
+    footer: 'Unlock PDF online, remove PDF password, decrypt AES-256-CBC PDF, unprotect PDF file locally in browser.',
   },
 };
 
@@ -230,6 +230,13 @@ function renderToolPage(tool) {
       <p class="footer-seo-tool"><strong>${esc(seo.title)}</strong> — ${esc(seo.footer)}</p>
     </div>
   </footer>
+
+  <div id="wasm-loading-overlay" class="wasm-loading" role="status" aria-label="Loading PDF engine">
+    <div class="wasm-loading-inner">
+      <div class="spinner" style="width:40px;height:40px;border-width:3px;"></div>
+      <p class="wasm-loading-text">Loading PDF engine…</p>
+    </div>
+  </div>
 
   <div class="toast" id="global-toast" role="alert" aria-live="polite"></div>
 

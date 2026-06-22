@@ -8,6 +8,24 @@ use dedup::{apply_remapping, find_duplicate_dictionaries, find_duplicate_streams
 use fonts::{collect_font_usage, compact_content_streams, deduplicate_fonts};
 use lopdf::{Document, Object};
 use streams::{compact_object_numbering, reflate_compress};
+use std::io::Cursor;
+use wasm_bindgen::prelude::*;
+use crate::util::load_doc;
+
+#[wasm_bindgen]
+pub fn compress_pdf(data: &[u8]) -> Result<js_sys::Uint8Array, JsValue> {
+    let mut doc = load_doc(data)
+        .map_err(|e| JsValue::from_str(&e))?;
+    optimize_pdf(&mut doc).map_err(|e| JsValue::from_str(&e))?;
+    let mut out = Vec::new();
+    doc.save_to(&mut Cursor::new(&mut out))
+        .map_err(|e| JsValue::from_str(&format!("Save error: {e}")))?;
+    if out.len() >= data.len() {
+        Ok(js_sys::Uint8Array::from(data))
+    } else {
+        Ok(js_sys::Uint8Array::from(out.as_slice()))
+    }
+}
 
 pub fn optimize_pdf(doc: &mut Document) -> Result<(), String> {
     if doc.trailer.get(b"Encrypt").is_ok() {

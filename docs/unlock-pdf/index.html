@@ -4,19 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Unlock PDF Online Free | I❤️localpdf</title>
-  <meta name="description" content="Remove password protection from a PDF you own. Decrypt PDFs locally in your browser — private and free." />
+  <meta name="description" content="Remove AES-256-CBC password protection from a PDF you own. Decrypt PDFs locally in your browser — private and free." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
-  <meta name="keywords" content="unlock pdf, remove pdf password, decrypt pdf, unprotect pdf" />
+  <meta name="keywords" content="unlock pdf, remove pdf password, decrypt pdf aes-256, unprotect pdf" />
   <link rel="canonical" href="https://ilovelocalpdf.com/unlock-pdf/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="I❤️localpdf" />
   <meta property="og:title" content="Unlock PDF Online Free | I❤️localpdf" />
-  <meta property="og:description" content="Remove password protection from a PDF you own. Decrypt PDFs locally in your browser." />
+  <meta property="og:description" content="Remove AES-256-CBC password protection from a PDF you own. Decrypt PDFs locally in your browser." />
   <meta property="og:url" content="https://ilovelocalpdf.com/unlock-pdf/" />
   <meta property="og:locale" content="en_US" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Unlock PDF Online Free | I❤️localpdf" />
-  <meta name="twitter:description" content="Remove password protection from a PDF you own. Decrypt PDFs locally in your browser." />
+  <meta name="twitter:description" content="Remove AES-256-CBC password protection from a PDF you own. Decrypt PDFs locally in your browser." />
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❤️</text></svg>" />
 </head>
@@ -53,7 +53,7 @@
     <section style="margin-top: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px;">
       <h2 id="tool-seo-title" style="font-family:'Plus Jakarta Sans',sans-serif; font-size:1.1rem; margin-bottom:10px;">Unlock PDF — Free &amp; Private</h2>
       <div id="tool-seo-body" style="color:var(--text-secondary); line-height:1.7;">
-        <p>Enter the document password to produce an unlocked copy for editing or archiving.</p>
+        <p>Enter the document password to produce an unlocked copy for editing or archiving. Supports AES-256-CBC decryption via local Rust/WASM. Works with standard password-protected PDFs.</p>
         <p>Files are processed on your device with Rust and WebAssembly — nothing is uploaded to a server.</p>
       </div>
     </section>
@@ -65,9 +65,16 @@
     <p class="footer-tagline">In-browser processing only — safe for confidential documents.</p>
     <div class="footer-seo" id="footer-seo">
       <p class="footer-seo-privacy">Every tool runs entirely in your web browser. Your PDFs are never uploaded to a server — safe for contracts, medical records, tax files, and other confidential documents.</p>
-      <p class="footer-seo-tool"><strong>Unlock PDF Online Free</strong> — Unlock PDF online, remove PDF password, decrypt PDF free, unprotect PDF file locally.</p>
+      <p class="footer-seo-tool"><strong>Unlock PDF Online Free</strong> — Unlock PDF online, remove PDF password, decrypt AES-256-CBC PDF, unprotect PDF file locally in browser.</p>
     </div>
   </footer>
+
+  <div id="wasm-loading-overlay" class="wasm-loading" role="status" aria-label="Loading PDF engine">
+    <div class="wasm-loading-inner">
+      <div class="spinner" style="width:40px;height:40px;border-width:3px;"></div>
+      <p class="wasm-loading-text">Loading PDF engine…</p>
+    </div>
+  </div>
 
   <div class="toast" id="global-toast" role="alert" aria-live="polite"></div>
 

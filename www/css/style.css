@@ -326,7 +326,6 @@ body {
   gap: 12px;
   transition: var(--transition);
   overflow: hidden;
-  group: true;
 }
 
 .tool-card::before {
@@ -1204,6 +1203,31 @@ body {
 .toast.show { transform: translateX(-50%) translateY(0); }
 .toast.error { border-color: rgba(233,64,87,0.4); }
 .toast.success { border-color: rgba(6,214,160,0.4); }
+
+/* ── WASM LOADING OVERLAY ───────────────────────────────────── */
+.wasm-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease;
+}
+
+.wasm-loading-inner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.wasm-loading-text {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
 
 /* ── LOADING SPINNER ────────────────────────────────────────── */
 .spinner {
